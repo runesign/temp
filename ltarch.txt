@@ -1,0 +1,26 @@
+timedatectl set-ntp true && timedatectl status && reflector --country China --protocol https --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
+
+cfdisk
+
+mkswap /dev/sda5 && mkfs.btrfs -fL SRArch /dev/sda6 && mount -t btrfs -o compress=zstd /dev/sda6 /mnt && df -h
+
+btrfs subvolume create /mnt/@ && btrfs subvolume create /mnt/@home && btrfs subvolume list -p /mnt && umount /mnt && mount -t btrfs -o subvol=/@,compress=zstd /dev/sda6 /mnt && mkdir /mnt/home && mount -t btrfs -o subvol=/@home,compress=zstd /dev/sda6 /mnt/home && mkdir -p /mnt/boot && mount /dev/sda1 /mnt/boot && swapon /dev/sda5
+
+pacstrap /mnt base base-devel linux linux-firmware btrfs-progs && pacstrap /mnt networkmanager vim neovim dhcpcd iwd sudo git zsh && genfstab -U /mnt > /mnt/etc/fstab && cat /mnt/etc/fstab && arch-chroot /mnt
+
+echo "sharance-lt-arch" | sudo tee /etc/hostname && echo -e "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\tltarch.localdomain ltarch" | sudo tee -a /etc/hosts && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && hwclock --systohc && sudo sed -i '/^#en_US.UTF-8 UTF-8/s/^#//' /etc/locale.gen && sudo sed -i '/^#zh_CN.UTF-8 UTF-8/s/^#//' /etc/locale.gen && locale-gen && echo 'LANG=en_US.UTF-8'  > /etc/locale.conf
+
+passwd root && pacman -S intel-ucode grub efibootmgr os-prober && os-prober && grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=ARCH
+
+vim /etc/default/grub
+
+grub-mkconfig -o /boot/grub/grub.cfg
+
+
+
+exit # 退回安装环境
+umount -R /mnt
+reboot # 重启
+
+
+useradd -m -G wheel -s /bin/bash dong
